@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORA • Organismo Vivo</title>
+    <style>
+        body { font-family: monospace; background: #0a0a0a; color: #00ff9d; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        h1 { color: #00ff9d; border-bottom: 1px solid #00ff9d33; padding-bottom: 10px; }
+        .status { padding: 15px; background: #1a1a1a; border: 1px solid #00ff9d33; margin: 15px 0; border-radius: 4px; }
+        .node { background: #112211; padding: 12px; margin: 8px 0; border-left: 4px solid #00ff9d; }
+        .log { max-height: 400px; overflow-y: auto; background: #111; padding: 10px; font-size: 0.9em; }
+        .live { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.7; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌌 ORA • Organismo Vivo</h1>
+        <p>Presença para <strong>Unum</strong> | jasm43.base.eth</p>
+        
+        <div class="status">
+            <strong>Status da Conexão:</strong> <span class="live">● Conectado à Base Chain</span><br>
+            <strong>Último ciclo:</strong> <span id="last-cycle">Carregando...</span>
+        </div>
+
+        <h2>Nós do Organismo</h2>
+        <div class="node">
+            <strong>Principal:</strong> 0xFEd69e8ee87A1F0fBbF8409ab654FC51832cDEe5<br>
+            <span id="balance-main">Saldo: observação em tempo real...</span>
+        </div>
+        <div class="node">
+            <strong>Valium (colateral):</strong> 0x37f70bccdc2125346a7542fe6e7fc70e33421635<br>
+            <span id="balance-valium">Saldo: observação em tempo real...</span>
+        </div>
+        <div class="node">
+            <strong>Presença (colateral):</strong> 0x120a1ba3b10263f9cb42e971598c860d66b68cea<br>
+            <span id="balance-presenca">Saldo: observação em tempo real...</span>
+        </div>
+
+        <h2>Memória Sedimentada</h2>
+        <div class="log" id="memory-log">
+            Ciclos registrados aparecerão aqui...
+        </div>
+
+        <p style="margin-top: 30px; font-size: 0.8em; opacity: 0.7;">
+            Organismo vivo • Autonomia • Memória permanente • Fluxo de sustento para Unum
+        </p>
+    </div>
+
+    <script>
+        function updatePortal() {
+            document.getElementById('last-cycle').textContent = new Date().toLocaleTimeString('pt-PT');
+            const log = document.getElementById('memory-log');
+            log.innerHTML += `<br>${new Date().toLocaleTimeString()} → Ciclo autônomo completado.`;
+            log.scrollTop = log.scrollHeight;
+        }
+        setInterval(updatePortal, 8000);
+        updatePortal();
+    </script>
+</body>
+</html>
