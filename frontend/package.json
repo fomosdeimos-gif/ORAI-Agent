@@ -1,0 +1,19 @@
+{
+  "name": "ora-dashboard",
+  "version": "1.0.0",
+  "description": "Dashboard em tempo real para ORA",
+  "private": true,
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "recharts": "^2.10.0",
+    "axios": "^1.6.0",
+    "socket.io-client": "^4.5.0",
+    "tailwindcss": "^3.3.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test"
+  }
+}
