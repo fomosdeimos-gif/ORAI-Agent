@@ -1,0 +1,1 @@
+"""Integrações com protocolos DeFi"""
