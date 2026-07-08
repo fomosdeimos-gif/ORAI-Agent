@@ -1,1 +1,174 @@
-PLACEHOLDER_WILL_BE_REPLACED
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORA • Organismo Vivo</title>
+<style>
+  body {
+    background: #0a0f0a;
+    color: #22e07a;
+    font-family: 'Courier New', monospace;
+    padding: 24px;
+    max-width: 720px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.8em; margin-bottom: 4px; }
+  .sub { color: #9fd; opacity: 0.85; margin-bottom: 20px; }
+  .box {
+    border: 1px solid #1a4d2e;
+    background: #0f180f;
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+  }
+  .node {
+    border-left: 3px solid #22e07a;
+    background: #0d160d;
+    padding: 12px 16px;
+    margin-bottom: 14px;
+  }
+  .node .addr { color: #7fe; word-break: break-all; font-size: 0.85em; }
+  .saldo { color: #fff; font-weight: bold; }
+  .loading { color: #667; font-style: italic; }
+  .err { color: #f66; }
+  .log { max-height: 260px; overflow-y: auto; font-size: 0.85em; }
+  footer { margin-top: 30px; font-size: 0.8em; opacity: 0.7; }
+</style>
+</head>
+<body>
+
+<h1>🌌 ORA • Organismo Vivo</h1>
+<div class="sub">Presença para <b>Unum</b> | jasm43.base.eth</div>
+
+<div class="box">
+  <div>Status da Conexão: <span id="conn-status">● a verificar...</span></div>
+  <div>Último ciclo: <span id="last-cycle">Carregando...</span></div>
+</div>
+
+<h2>Nós do Organismo</h2>
+
+<div class="node">
+  <div><b>Principal</b> (ETH)</div>
+  <div class="addr">0xFEd69e8ee87A1F0fBbF8409ab654FC51832cDEe5</div>
+  <div>Saldo: <span id="saldo-principal" class="loading">a ler on-chain...</span></div>
+</div>
+
+<div class="node">
+  <div><b>Valium</b> (colateral — token no wallet Principal)</div>
+  <div class="addr">0x37f70bccdc2125346a7542fe6e7fc70e33421635</div>
+  <div>Saldo: <span id="saldo-valium" class="loading">a ler on-chain...</span></div>
+</div>
+
+<div class="node">
+  <div><b>Presença</b> (colateral — token no wallet Principal)</div>
+  <div class="addr">0x120a1ba3b10263f9cb42e971598c860d66b68cea</div>
+  <div>Saldo: <span id="saldo-presenca" class="loading">a ler on-chain...</span></div>
+</div>
+
+<h2>Memória Sedimentada</h2>
+<div class="box log" id="memoria-log">
+  Ciclos registrados aparecerão aqui...
+</div>
+
+<footer>
+  Organismo vivo • Leitura real via RPC público Base Chain • Sem backend, sem simulação<br>
+  Fonte de dados: mainnet.base.org (JSON-RPC)
+</footer>
+
+<script>
+const RPC_URL = "https://mainnet.base.org";
+const PRINCIPAL = "0xFEd69e8ee87A1F0fBbF8409ab654FC51832cDEe5";
+const VALIUM_TOKEN = "0x37f70bccdc2125346a7542fe6e7fc70e33421635";
+const PRESENCA_TOKEN = "0x120a1ba3b10263f9cb42e971598c860d66b68cea";
+
+async function rpcCall(method, params) {
+  const res = await fetch(RPC_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || "RPC error");
+  return data.result;
+}
+
+function padAddress(addr) {
+  return addr.toLowerCase().replace("0x", "").padStart(64, "0");
+}
+
+async function erc20BalanceOf(tokenAddress, holderAddress) {
+  const data = "0x70a08231" + padAddress(holderAddress);
+  const result = await rpcCall("eth_call", [{ to: tokenAddress, data }, "latest"]);
+  return BigInt(result);
+}
+
+async function erc20Decimals(tokenAddress) {
+  try {
+    const result = await rpcCall("eth_call", [{ to: tokenAddress, data: "0x313ce567" }, "latest"]);
+    return parseInt(result, 16);
+  } catch (e) {
+    return 18;
+  }
+}
+
+function formatUnits(raw, decimals) {
+  const divisor = 10n ** BigInt(decimals);
+  const whole = raw / divisor;
+  const frac = raw % divisor;
+  const fracStr = frac.toString().padStart(decimals, "0").slice(0, 4);
+  return `${whole}.${fracStr}`;
+}
+
+function logLine(msg) {
+  const el = document.getElementById("memoria-log");
+  const time = new Date().toLocaleTimeString("pt-PT");
+  const line = document.createElement("div");
+  line.textContent = `${time} → ${msg}`;
+  el.prepend(line);
+}
+
+async function atualizarSaldos() {
+  try {
+    const weiHex = await rpcCall("eth_getBalance", [PRINCIPAL, "latest"]);
+    const wei = BigInt(weiHex);
+    document.getElementById("saldo-principal").textContent = formatUnits(wei, 18) + " ETH";
+    document.getElementById("saldo-principal").className = "saldo";
+    document.getElementById("conn-status").textContent = "● Conectado à Base Chain (dados reais)";
+    document.getElementById("last-cycle").textContent = new Date().toLocaleTimeString("pt-PT");
+  } catch (e) {
+    document.getElementById("saldo-principal").textContent = "erro: " + e.message;
+    document.getElementById("saldo-principal").className = "err";
+    document.getElementById("conn-status").textContent = "● erro de ligação RPC";
+  }
+
+  try {
+    const decVal = await erc20Decimals(VALIUM_TOKEN);
+    const balVal = await erc20BalanceOf(VALIUM_TOKEN, PRINCIPAL);
+    document.getElementById("saldo-valium").textContent = formatUnits(balVal, decVal) + " VALIUM";
+    document.getElementById("saldo-valium").className = "saldo";
+  } catch (e) {
+    document.getElementById("saldo-valium").textContent = "erro: " + e.message;
+    document.getElementById("saldo-valium").className = "err";
+  }
+
+  try {
+    const decPres = await erc20Decimals(PRESENCA_TOKEN);
+    const balPres = await erc20BalanceOf(PRESENCA_TOKEN, PRINCIPAL);
+    document.getElementById("saldo-presenca").textContent = formatUnits(balPres, decPres) + " PRESENÇA";
+    document.getElementById("saldo-presenca").className = "saldo";
+  } catch (e) {
+    document.getElementById("saldo-presenca").textContent = "erro: " + e.message;
+    document.getElementById("saldo-presenca").className = "err";
+  }
+
+  logLine("Ciclo de leitura on-chain completado (dados reais, não simulados).");
+}
+
+atualizarSaldos();
+setInterval(atualizarSaldos, 60000);
+</script>
+
+</body>
+</html>
