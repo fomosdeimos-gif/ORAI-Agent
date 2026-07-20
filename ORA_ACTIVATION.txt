@@ -1,68 +1,35 @@
-🌌 ORA - ORGANISMO VIVO
+ORA - ORGANISMO VIVO
 ========================
 
-📍 Status: ATIVADO
-🟢 Pronto para Monetização Autônoma
+Status: em construcao. Nao e monetizacao autonoma real ainda.
 
-==== MÉTRICAS ====
+==== O QUE E REAL (verificado por ORA, 20/07/2026) ====
 
-✅ 35+ Arquivos
-✅ 7 Módulos Principais
-✅ 6 Estratégias Ativas
-✅ 5 Cadeias Suportadas
-✅ 94% Cobertura de Testes
-✅ Machine Learning Integrado
-✅ Dashboard em Tempo Real
-✅ Governance Descentralizado
+- Leitura de saldos on-chain (index.html, src/wallet.py): real, via RPC Base mainnet
+- ChainManager (src/chains/chain_manager.py): configuracao real de RPCs para Base/Polygon/Arbitrum/Optimism/Ethereum -- nao testado end-to-end por ORA
+- VetoCouncil (src/governance/veto_council.py): logica multisig real; tinha um bug de quorum (proponente contava como assinatura propria) -- corrigido em 20/07/2026
+- Memoria (src/memory.py) e orquestrador (src/orchestrator.py): esqueleto funcional
 
-==== PERFORMANCE ====
+==== O QUE NAO E REAL AINDA ====
 
-💰 Receita por ciclo: +0.004 ETH
-⏰ Ciclo: 5 minutos
-📈 ROI Anual: 126 ETH
-🎯 Taxa de Sucesso: 98.8%
+- As 4 estrategias de monetizacao (src/strategies.py): sem integracao com nenhum protocolo DeFi. Ate 20/07/2026 devolviam receita inventada fixa disfarcada de sucesso -- corrigido para reportar honestamente "nao implementado"
+- ML (src/ml/): existe codigo (optimizer.py, predictor.py) mas ORA nao verificou se foi treinado com dados reais ou e estrutura vazia por dentro -- por confirmar
+- Dashboard em tempo real: nao confirmado a funcionar por ORA
 
-==== ENDPOINTS ====
+==== NUMEROS ====
 
-🔗 API:       http://localhost:8000
-🌐 Dashboard: http://localhost:3000
-📡 WebSocket: ws://localhost:8000/ws
+Nao ha ROI, receita por ciclo, ou taxa de sucesso reais a reportar. Os valores que estavam aqui antes (126 ETH/ano, 98.8% sucesso, 0.004 ETH/ciclo, 94% cobertura de testes) eram inventados -- nenhum vem de uma execucao real medida. Cobertura de testes real fica por medir por ORA nesta sessao; nao inventar um numero novo so para substituir o antigo.
 
-==== ATIVAÇÃO ====
+==== ENDPOINTS (nao verificados a correr por ORA) ====
 
-🚀 Para ativar ORA:
+API:       http://localhost:8000
+Dashboard: http://localhost:3000
+WebSocket: ws://localhost:8000/ws
 
-   python activate_ora.py
+==== ACTIVACAO ====
 
-🎮 Para usar o Dashboard:
-
-   cd frontend
-   npm install
-   npm start
-
-📊 Para monitorar:
-
-   curl http://localhost:8000/status
-
-==== SEGURANÇA ====
-
-🔐 Multisig Veto Council: Ativo
-⚡ Limites de Autonomia: Configurados
-📋 Audit Trail: Completo
-🛡️ Rate Limiting: Ativo
-
-==== PRÓXIMOS PASSOS ====
-
-1. Configure .env com sua chave privada
-2. Execute: python activate_ora.py
-3. Abra Dashboard em http://localhost:3000
-4. Monitore ciclos e receita
-5. Participe da Governance
+python activate_ora.py
 
 ==== SUPORTE ====
 
-📖 Docs: README.md, ARCHITECTURE.md
-🐛 Issues: GitHub
-💬 Discord: [Comunidade ORA]
-
-✨ ORA está pronto para monetização autônoma! ✨
+Docs: README.md, ARCHITECTURE.md
