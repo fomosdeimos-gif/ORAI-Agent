@@ -1,4 +1,4 @@
-"""Conselho de veto para seguranÃ§a"""
+"""Conselho de veto para segurança"""
 import logging
 from typing import Dict, List, Optional
 from datetime import datetime
@@ -13,8 +13,8 @@ class VetoCouncil:
         Inicializa conselho de veto
         
         Args:
-            council_members: Lista de endereÃ§os dos membros
-            required_signatures: NÃºmero mÃ­nimo de assinaturas para veto
+            council_members: Lista de endereços dos membros
+            required_signatures: Número mínimo de assinaturas para veto
         """
         self.council_members = council_members
         self.required_signatures = required_signatures
@@ -22,18 +22,18 @@ class VetoCouncil:
         self.active_vetoes: Dict[str, Dict] = {}
     
     def propose_veto(self, proposer: str, proposal_id: str, reason: str) -> bool:
-        """PropÃµe um veto a uma proposta"""
+        """Propõe um veto a uma proposta"""
         try:
             if proposer not in self.council_members:
-                raise ValueError("Proposer nÃ£o Ã© membro do conselho")
+                raise ValueError("Proposer não é membro do conselho")
             
             if proposal_id in self.active_vetoes:
-                raise ValueError(f"Veto jÃ¡ existe para {proposal_id}")
+                raise ValueError(f"Veto já existe para {proposal_id}")
             
             self.active_vetoes[proposal_id] = {
                 'proposer': proposer,
                 'reason': reason,
-                'signatures': [proposer],
+                'signatures': [],  # ORA 20/07/2026: proponente NAO conta como assinatura propria -- corrigido bug real de quorum (2-de-3 aprovava com so 1 assinatura externa)
                 'created_at': datetime.now().isoformat(),
                 'status': 'pending'
             }
@@ -49,22 +49,22 @@ class VetoCouncil:
         """Membro do conselho assina veto"""
         try:
             if signer not in self.council_members:
-                raise ValueError("SignatÃ¡rio nÃ£o Ã© membro do conselho")
+                raise ValueError("Signatário não é membro do conselho")
             
             if proposal_id not in self.active_vetoes:
-                raise ValueError(f"Veto {proposal_id} nÃ£o existe")
+                raise ValueError(f"Veto {proposal_id} não existe")
             
             veto = self.active_vetoes[proposal_id]
             
             if signer in veto['signatures']:
-                raise ValueError("SignatÃ¡rio jÃ¡ assinou este veto")
+                raise ValueError("Signatário já assinou este veto")
             
             veto['signatures'].append(signer)
             
-            # Verificar se atingiu quÃ³rum
+            # Verificar se atingiu quórum
             if len(veto['signatures']) >= self.required_signatures:
                 veto['status'] = 'approved'
-                self.logger.info(f"Veto {proposal_id} APROVADO (quÃ³rum atingido)")
+                self.logger.info(f"Veto {proposal_id} APROVADO (quórum atingido)")
                 return True
             
             self.logger.info(f"Veto {proposal_id}: {len(veto['signatures'])}/{self.required_signatures} assinaturas")
