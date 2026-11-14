@@ -1,51 +1,55 @@
-"""Testemunha independente do sustento diario de Unum.
+# -*- coding: utf-8 -*-
+"""Testemunha independente do sustento de Unum (leitura, sem chaves).
 
-ORA, 20/07/2026: Jorge pediu utilidade real para o ORAI. Esta e ela: uma
-segunda confirmacao, escrita de forma completamente independente do
-codigo do ORUM (que vive em orai-sustento-token, Supabase). Nao partilha
-nenhuma linha com esse sistema -- so a mesma verdade objectiva na chain.
+Le o saldo VALIUM da carteira sagrada na Base directamente por RPC publico,
+sem depender do codigo do ORUM. So diz "concordam" quando pelo menos duas
+fontes independentes devolvem o mesmo valor no mesmo bloco. Uma fonte so,
+ou fontes que discordam, nunca sao dadas como verificadas.
 
-Duas implementacoes diferentes a chegar ao mesmo numero e evidencia real
-de que o numero e verdadeiro. Uma implementacao a repetir-se a si mesma
-nao e.
-
-Nota honesta: este modulo nao foi executado end-to-end pelo ORA nesta
-sessao -- o sandbox onde ORA correu tinha a rede bloqueada para o RPC da
-Base. A logica replica exactamente o padrao ja confirmado a funcionar
-todos os dias dentro do ORUM (mesmo contrato, mesmo metodo balanceOf).
-Correr isto a serio, pela primeira vez, fica para quem tiver acesso de
-rede -- Unum, ou uma proxima sessao do Claude Code neste repositorio.
+Nao calcula veredictos em moeda corrente: o preco do VALIUM nao esta
+verificado, por isso este modulo devolve so o que a cadeia mostra.
+Nao assina, nao paga, nao move fundos.
 """
 import json
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 
-RPC_URL = "https://mainnet.base.org"
+RPCS = (
+    "https://mainnet.base.org",
+    "https://base-rpc.publicnode.com",
+    "https://1rpc.io/base",
+)
 VALIUM_CONTRACT = "0x37f70bccdc2125346a7542fe6e7fc70e33421635"
 CARTEIRA_SAGRADA = "0xFEd69e8ee87A1F0fBbF8409ab654FC51832cDEe5"
-ANCORA_EUR = 33.0
-PRECO_VALIUM_USD_NOMINAL = 0.055  # ultimo preco real confirmado (Aerodrome/Zora), liquidez fina
+USER_AGENT = "ORAI-witness/1.1 (leitura publica; sem chaves)"
 
 
 @dataclass
-class TestemunhaResultado:
-    valium_tokens: float
-    valium_necessario: float
-    suficiente: bool
-    bloco: int
-    fonte: str
-    quando: str
+class Leitura:
+    estado: str  # "concordam" | "fonte_unica" | "discordam" | "sem_fontes"
+    verificado: bool
+    bloco: int | None
+    valor_wei: int | None
+    fontes_ok: list = field(default_factory=list)
+    fontes_falhadas: list = field(default_factory=list)
+    quando: str = ""
+
+    @property
+    def tokens(self):
+        return None if self.valor_wei is None else self.valor_wei / 10**18
 
 
 def _balance_of_calldata(endereco: str) -> str:
-    endereco_limpo = endereco.lower().replace("0x", "").rjust(64, "0")
-    return "0x70a08231" + endereco_limpo
+    return "0x70a08231" + endereco.lower().replace("0x", "").rjust(64, "0")
 
 
-def _rpc_call(method: str, params: list):
+def _rpc_call(url: str, method: str, params: list):
     payload = json.dumps({"jsonrpc": "2.0", "id": 1, "method": method, "params": params}).encode()
-    req = urllib.request.Request(RPC_URL, data=payload, headers={"Content-Type": "application/json"})
+    req = urllib.request.Request(
+        url, data=payload,
+        headers={"Content-Type": "application/json", "User-Agent": USER_AGENT},
+    )
     with urllib.request.urlopen(req, timeout=15) as resp:
         result = json.loads(resp.read())
     if "error" in result:
@@ -53,37 +57,47 @@ def _rpc_call(method: str, params: list):
     return result["result"]
 
 
-def testemunhar_sustento() -> TestemunhaResultado:
-    """Le a reserva VALIUM directamente da chain, sem depender do ORUM/Supabase.
+def testemunhar_sustento(rpcs=RPCS, chamar=_rpc_call) -> Leitura:
+    quando = datetime.now(timezone.utc).isoformat()
+    falhadas, blocos = [], {}
+    for url in rpcs:
+        try:
+            blocos[url] = int(chamar(url, "eth_blockNumber", []), 16)
+        except Exception as e:  # fonte em baixo, bloqueada ou invalida
+            falhadas.append({"fonte": url, "erro": f"{type(e).__name__}: {e}"})
+    if not blocos:
+        return Leitura("sem_fontes", False, None, None, [], falhadas, quando)
 
-    Esta e a unica funcao que importa aqui. Devolve a verdade tal como a
-    chain a mostra neste instante -- nada calculado, nada memorizado.
-    """
-    valium_wei_hex = _rpc_call("eth_call", [
-        {"to": VALIUM_CONTRACT, "data": _balance_of_calldata(CARTEIRA_SAGRADA)},
-        "latest",
-    ])
-    bloco_hex = _rpc_call("eth_blockNumber", [])
+    # mesmo bloco para todas: o mais baixo, menos 2 para nenhuma fonte estar atrasada
+    bloco = max(min(blocos.values()) - 2, 0)
+    valores = {}
+    for url in blocos:
+        try:
+            raw = chamar(url, "eth_call", [
+                {"to": VALIUM_CONTRACT, "data": _balance_of_calldata(CARTEIRA_SAGRADA)},
+                hex(bloco),
+            ])
+            valores[url] = int(raw, 16)
+        except Exception as e:
+            falhadas.append({"fonte": url, "erro": f"{type(e).__name__}: {e}"})
 
-    valium_tokens = int(valium_wei_hex, 16) / 1e18
-    valium_necessario = ANCORA_EUR / PRECO_VALIUM_USD_NOMINAL
-
-    return TestemunhaResultado(
-        valium_tokens=valium_tokens,
-        valium_necessario=valium_necessario,
-        suficiente=valium_tokens >= valium_necessario,
-        bloco=int(bloco_hex, 16),
-        fonte="ORAI (independente do ORUM/Supabase) -- leitura directa via RPC Base mainnet",
-        quando=datetime.now(timezone.utc).isoformat(),
-    )
+    if not valores:
+        return Leitura("sem_fontes", False, bloco, None, [], falhadas, quando)
+    distintos = set(valores.values())
+    if len(distintos) > 1:
+        # nunca escolhe um valor
+        return Leitura("discordam", False, bloco, None, sorted(valores), falhadas, quando)
+    valor = distintos.pop()
+    if len(valores) < 2:
+        return Leitura("fonte_unica", False, bloco, valor, sorted(valores), falhadas, quando)
+    return Leitura("concordam", True, bloco, valor, sorted(valores), falhadas, quando)
 
 
 if __name__ == "__main__":
     r = testemunhar_sustento()
-    veredicto = "CONFIRMADO" if r.suficiente else "INSUFICIENTE"
-    print(f"[ORAI · testemunha independente] {veredicto}")
-    print(f"  VALIUM na Carteira Sagrada: {r.valium_tokens:,.2f}")
-    print(f"  Necessario para ancora EUR{ANCORA_EUR:.2f}: ~{r.valium_necessario:.0f}")
+    print(f"[ORAI testemunha] estado={r.estado} verificado={r.verificado}")
+    print(f"  VALIUM na carteira sagrada: {r.tokens if r.tokens is not None else 'n/d'} (wei={r.valor_wei})")
     print(f"  Bloco: {r.bloco}")
-    print(f"  Fonte: {r.fonte}")
+    print(f"  Fontes ok: {r.fontes_ok}")
+    print(f"  Fontes falhadas: {r.fontes_falhadas}")
     print(f"  Quando: {r.quando}")
