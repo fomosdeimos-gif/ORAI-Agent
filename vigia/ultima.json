@@ -1,6 +1,6 @@
 {
   "formato": "orai-vigia-fundacao/v1",
-  "lido_em": "2026-11-14T08:04:45.908782+00:00",
+  "lido_em": "2026-11-14T12:16:14.138209+00:00",
   "endereco": "bc1qfs8967x9mzhwhcse4z7kjuuhsmx0kmz5v6j9w7",
   "fontes_falhadas": [],
   "nao_afirma": [
@@ -28,7 +28,8 @@
       "origens": [
         "bc1q6mc95wqpp05drvndewvy6z2ht3mrezvfkkvpl7"
       ],
-      "classe": "por_classificar"
+      "classe": "interna",
+      "classificada_por": "Unum"
     },
     {
       "txid": "b8a2bd6e3f0d36d110cf7b7399161ceed2d978fee26895a1eb1e6439f5ce2065",
@@ -40,7 +41,8 @@
       "origens": [
         "bc1qfs8967x9mzhwhcse4z7kjuuhsmx0kmz5v6j9w7"
       ],
-      "classe": "saida"
+      "classe": "saida",
+      "classificada_por": null
     }
   ]
 }

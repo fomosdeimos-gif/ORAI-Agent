@@ -52,4 +52,17 @@ assert v.vigiar(obter=duas(baixo, baixo))["estado"] == "sem_fontes"
 # saida nao e receita
 r = v.vigiar(obter=duas(fonte([tx("s", FUN, 0, 50)], 0), fonte([tx("s", FUN, 0, 50)], 0)))
 assert r["txs"][0]["sentido"] == "saida" and r["txs"][0]["classe"] == "saida"
-print("estragos propositados apanhados: 6/6")
+# origem classificada por Unum: interna, mas marcada como palavra e nao prova
+UNUM = "bc1q6mc95wqpp05drvndewvy6z2ht3mrezvfkkvpl7"
+assert UNUM in v.CLASSIFICADAS_POR_UNUM and UNUM not in v.INTERNOS_BTC
+r = v.vigiar(obter=duas(fonte([tx("u", UNUM, 100)], 100), fonte([tx("u", UNUM, 100)], 100)))
+assert r["txs"][0]["classe"] == "interna" and r["txs"][0]["classificada_por"] == "Unum"
+# origem do organismo: interna sem marca de Unum
+r = v.vigiar(obter=duas(fonte([tx("b", SAG, 100)], 100), fonte([tx("b", SAG, 100)], 100)))
+assert r["txs"][0]["classificada_por"] is None
+# origem desconhecida continua por classificar, mesmo existindo uma classificada
+r = v.vigiar(obter=duas(ok, ok))
+assert r["txs"][0]["classe"] == "por_classificar" and r["txs"][0]["classificada_por"] is None
+# a citacao de Unum esta registada
+assert "Podes acrescentar" in v.CLASSIFICADAS_POR_UNUM[UNUM]["citacao"]
+print("estragos propositados apanhados: 10/10")

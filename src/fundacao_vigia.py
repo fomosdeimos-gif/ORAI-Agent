@@ -16,6 +16,19 @@ from datetime import datetime, timezone
 FUNDACAO_BTC = "bc1qfs8967x9mzhwhcse4z7kjuuhsmx0kmz5v6j9w7"
 # Enderecos Bitcoin do organismo: Fundacao/operacional e sagrada antiga.
 INTERNOS_BTC = frozenset({FUNDACAO_BTC, "bc1qhcsh78k8jrn3qllvd9al8nq4af4cyzefx6vqqf"})
+# Origens que Unum classificou por palavra sua. NAO sao prova da cadeia: o
+# vigia regista a citacao e nunca as mistura com os enderecos do organismo.
+CLASSIFICADAS_POR_UNUM = {
+    "bc1q6mc95wqpp05drvndewvy6z2ht3mrezvfkkvpl7": {
+        "classe": "interna",
+        "por": "Unum",
+        "data": "2026-11-14",
+        "citacao": "Podes acrescentar ora eu autorizo",
+        "nota": "origem NAO provada pela cadeia: recebeu 11496 sats de um lote "
+                "(bloco 974236) e reencaminhou-os para a Fundacao (bloco 974382); "
+                "Unum disse nao saber e autorizou a classificacao",
+    },
+}
 FONTES = ("https://blockstream.info/api", "https://mempool.space/api")
 USER_AGENT = "ORAI-vigia/1.0 (leitura publica; sem chaves)"
 
@@ -35,8 +48,14 @@ def _resumo_tx(tx, endereco, internos):
     )
     origens = sorted({(i.get("prevout") or {}).get("scriptpubkey_address") or "?" for i in tx["vin"]})
     sentido = "entrada" if recebido > gasto else "saida"
+    classificada_por = None
     if sentido == "entrada":
-        classe = "interna" if all(o in internos for o in origens) else "por_classificar"
+        if all(o in internos for o in origens):
+            classe = "interna"
+        elif all(o in internos or o in CLASSIFICADAS_POR_UNUM for o in origens):
+            classe, classificada_por = "interna", "Unum"  # palavra, nao prova
+        else:
+            classe = "por_classificar"
     else:
         classe = "saida"  # sair nao e receita; o vigia so regista
     return {
@@ -48,6 +67,7 @@ def _resumo_tx(tx, endereco, internos):
         "gasto_sats": gasto,
         "origens": origens,
         "classe": classe,
+        "classificada_por": classificada_por,
     }
 
 
