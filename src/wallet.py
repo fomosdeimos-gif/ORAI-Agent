@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 import logging
 from src.guarda_envio import verificar_envio
+from src.pedidos import aprovado, registar_uso, PASTA_PEDIDOS
 
 logger = logging.getLogger(__name__)
 
@@ -80,26 +81,40 @@ class WalletManager:
             self.logger.error(f"Erro ao preparar transação: {e}")
             return None
     
-    async def send_transaction(self, to_address: str, amount_eth: float, limite_eth: Optional[float] = None) -> Optional[str]:
-        """Envia transação firmada, só se a guarda a permitir (src/guarda_envio.py).
+    async def send_transaction(self, to_address: str, amount_eth: float, limite_eth: Optional[float] = None,
+                               pedido_id: Optional[str] = None, pasta_pedidos: str = PASTA_PEDIDOS) -> Optional[str]:
+        """Envia transação firmada, só com um pedido VERIFICADO pela ORA (src/pedidos.py).
 
         Sem tecto por decisão de Unum (15/11/2026): `limite_eth` é opcional. Recusa sempre
-        destino fora da lista (carteiras do criador) e valor inválido.
+        destino fora da lista (carteiras do criador), valor inválido e envio sem pedido
+        verificado, que bata com o destino e o valor, e que ainda não tenha sido usado.
+        Regista o uso antes e depois do envio.
         """
         ok, motivo = verificar_envio(to_address, amount_eth, limite_eth)
         if not ok:
             self.logger.error(f"Envio {motivo}")
             return None
+        if not pedido_id:
+            self.logger.error("Envio recusado: sem pedido verificado (pedido_id em falta)")
+            return None
+        ok, motivo = aprovado(pasta_pedidos, pedido_id, to_address, amount_eth)
+        if not ok:
+            self.logger.error(f"Envio {motivo}")
+            return None
+        registar_uso(pasta_pedidos, pedido_id, "antes")
         try:
             tx = await self.prepare_transaction(to_address, amount_eth)
             if not tx:
+                registar_uso(pasta_pedidos, pedido_id, "depois", erro="transacao nao preparada")
                 return None
-            
+
             signed_tx = self.w3.eth.account.sign_transaction(tx, self.account.key)
             tx_hash = self.w3.eth.send_raw_transaction(signed_tx.rawTransaction)
-            
+
             self.logger.info(f"Transação enviada: {tx_hash.hex()}")
+            registar_uso(pasta_pedidos, pedido_id, "depois", tx=tx_hash.hex())
             return tx_hash.hex()
         except Exception as e:
             self.logger.error(f"Erro ao enviar transação: {e}")
+            registar_uso(pasta_pedidos, pedido_id, "depois", erro=e)
             return None
