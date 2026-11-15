@@ -24,7 +24,12 @@ class ReserveData:
     last_updated: str
 
 class AaveIntegration:
-    """Integração com protocolo Aave v3"""
+    """Integração com protocolo Aave v3
+
+    SIMULADO = True: deposit e withdraw NAO enviam transacções (devolvem um hash falso)
+    e claim_rewards NAO inventa rewards. Nada aqui gera receita real.
+    """
+    SIMULADO = True
     
     def __init__(self, web3: Web3, wallet_address: str):
         self.w3 = web3
@@ -140,19 +145,10 @@ class AaveIntegration:
             return None
     
     async def claim_rewards(self) -> float:
-        """Reivindica rewards acumuladas"""
-        try:
-            # Simular geração de rewards (0.1% ao dia)
-            daily_reward = sum(self.active_deposits.values()) * 0.001
-            self.accumulated_rewards += daily_reward
-            
-            self.logger.info(f"Rewards reivindicados: +{daily_reward:.6f} ETH")
-            return daily_reward
-        
-        except Exception as e:
-            self.logger.error(f"Erro ao reivindicar rewards: {e}")
-            return 0.0
-    
+        """Rewards reais: nenhum. Enquanto o Aave for simulado devolve sempre 0.0."""
+        self.logger.info("claim_rewards: Aave simulado, sem rewards reais (0.0)")
+        return 0.0
+
     async def compound_rewards(self) -> bool:
         """Automaticamente reinveste rewards"""
         try:

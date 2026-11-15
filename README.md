@@ -10,8 +10,9 @@ Presenca de ORA ligada ao ORUM. Le estado real da chain Base. Nao inventa receit
 
 - `src/wallet.py` tem `send_transaction`, que assina e envia ETH com `WALLET_PRIVATE_KEY`. **Nenhuma linha do repositorio a chama** (procurado `send_transaction`, `send_raw_transaction` e `sign_transaction` fora dos testes).
 - `AaveIntegration.deposit` e `withdraw` **simulam**: nao enviam nada e devolvem um hash falso (`0x000...`).
-- `AaveIntegration.claim_rewards` **inventa** rewards (0,1% ao dia sobre depositos simulados). Se `AaveYieldStrategy` fosse ligada ao orquestrador, devolveria `success=True` com receita que nao existe. **Hoje nao esta ligada**: o orquestrador so usa as quatro estrategias base, que devolvem sempre `success=False` e receita 0.
-- `AUTONOMY_LIMITS` (`src/config.py`) so e escrito no registo: **nenhum codigo o aplica**. Se um dia `send_transaction` for ligada, estes limites nao protegem nada.
+- `AaveIntegration.claim_rewards` inventava rewards (0,1% ao dia). **Corrigido (15/11/2026)**: devolve sempre 0.0 enquanto o Aave for simulado (`AaveIntegration.SIMULADO = True`), e `AaveYieldStrategy` devolve `success=False` e receita 0 sem fazer nada. O orquestrador continua a nao a usar.
+- `send_transaction` **so envia se `src/guarda_envio.py` o permitir**: recusa por omissao (sem `limite_eth`, valor invalido ou acima do limite, ou destino fora da lista). A lista tem um unico destino, a sagrada antiga; mudar a lista e decisao de Unum, escrita nesse ficheiro. Continua a nao ser chamada por ninguem.
+- `AUTONOMY_LIMITS` (`src/config.py`) continua a so ser escrito no registo: nao e a guarda. A guarda e `guarda_envio.py`, com o limite dado por quem chama.
 
 **O que e real e so de leitura** (sem chaves; adicionado a 14/11/2026):
 
@@ -19,7 +20,7 @@ Presenca de ORA ligada ao ORUM. Le estado real da chain Base. Nao inventa receit
 - **Vigia da Fundacao** (`src/fundacao_vigia.py`): le o endereco Bitcoin da Fundacao em duas fontes Esplora e so diz `concordam` se o resultado inteiro for igual. Nunca classifica uma entrada como "externa": so `interna` ou `por_classificar`. Nao assina nem paga.
 - `CLASSIFICADAS_POR_UNUM` (no vigia) guarda origens que Unum classificou **por palavra, nao por prova da cadeia** (hoje `bc1q6mc95...vpl7`). Qualquer entrada futura vinda dessas origens aparece como `interna`; se uma delas for um servico partilhado, esconde pagamentos externos.
 
-**Testes corridos a 15/11/2026** (so biblioteca padrao, fontes simuladas): `tests/test_fundacao_vigia.py` 10 de 10 estragos propositados apanhados; `tests/test_sustento_witness.py` 6 de 6. **Nao corridos**: os outros 8 testes precisam de `web3` e `pytest`.
+**Testes corridos a 15/11/2026** (so biblioteca padrao, fontes simuladas): `tests/test_fundacao_vigia.py` 10 de 10 estragos propositados apanhados; `tests/test_sustento_witness.py` 6 de 6; `tests/test_guarda_envio.py` 13 de 13. **Nao corridos**: os outros 8 testes precisam de `web3` e `pytest` (incluindo `tests/test_aave.py`, actualizado para o novo comportamento mas nao corrido).
 
 **Nao lido**: `src/ml`, `src/governance`, `src/chains`, o painel e o `frontend`. Este bloco nao promete receita, procura nem valor.
 

@@ -4,6 +4,7 @@ from typing import Dict, Optional, List
 from dataclasses import dataclass
 from enum import Enum
 import logging
+from src.guarda_envio import verificar_envio
 
 logger = logging.getLogger(__name__)
 
@@ -79,8 +80,15 @@ class WalletManager:
             self.logger.error(f"Erro ao preparar transação: {e}")
             return None
     
-    async def send_transaction(self, to_address: str, amount_eth: float) -> Optional[str]:
-        """Envia transação firmada"""
+    async def send_transaction(self, to_address: str, amount_eth: float, limite_eth: Optional[float] = None) -> Optional[str]:
+        """Envia transação firmada, só se a guarda a permitir (src/guarda_envio.py).
+
+        Recusa por omissão: sem `limite_eth`, destino fora da lista ou valor acima do limite.
+        """
+        ok, motivo = verificar_envio(to_address, amount_eth, limite_eth)
+        if not ok:
+            self.logger.error(f"Envio {motivo}")
+            return None
         try:
             tx = await self.prepare_transaction(to_address, amount_eth)
             if not tx:

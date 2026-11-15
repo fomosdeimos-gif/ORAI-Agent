@@ -37,8 +37,8 @@ async def test_claim_rewards(aave_integration):
     """Testa reivindicação de rewards"""
     aave_integration.active_deposits['0x000'] = 1.0
     reward = await aave_integration.claim_rewards()
-    assert reward >= 0.0
-    assert aave_integration.accumulated_rewards > 0.0
+    assert reward == 0.0  # simulado: nao inventa rewards
+    assert aave_integration.accumulated_rewards == 0.0
 
 @pytest.mark.asyncio
 async def test_get_stats(aave_integration):
