@@ -16,6 +16,16 @@ class AaveYieldStrategy(MonetizationStrategy):
     
     async def execute(self) -> StrategyResult:
         """Executa estratégia de yield farming"""
+        if getattr(self.aave, "SIMULADO", False):
+            # Nunca finge receita: enquanto o Aave for simulado, esta estrategia nao faz nada.
+            return StrategyResult(
+                strategy_name="AaveYield",
+                success=False,
+                revenue_generated=0.0,
+                transactions=[],
+                timestamp=datetime.now().isoformat(),
+                error="Aave simulado: nenhuma transaccao real, nenhuma receita"
+            )
         try:
             self.logger.info("🌾 Iniciando Aave Yield Farming")
             
