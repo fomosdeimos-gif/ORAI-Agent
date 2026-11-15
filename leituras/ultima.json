@@ -1,0 +1,76 @@
+{
+  "formato": "orai-leituras/v1",
+  "lido_em": "2026-11-15T11:22:54Z",
+  "testemunha": {
+    "estado": "concordam",
+    "verificado": true,
+    "bloco": 57756986,
+    "valor_wei": "2976352211822864886784",
+    "valium": 2976.352211822865,
+    "fontes_ok": [
+      "https://1rpc.io/base",
+      "https://base-rpc.publicnode.com",
+      "https://mainnet.base.org"
+    ],
+    "fontes_falhadas": [],
+    "carteira": "0xFEd69e8ee87A1F0fBbF8409ab654FC51832cDEe5",
+    "contrato": "0x37f70bccdc2125346a7542fe6e7fc70e33421635"
+  },
+  "vigia": {
+    "formato": "orai-vigia-fundacao/v1",
+    "lido_em": "2026-11-15T11:22:54.021425+00:00",
+    "endereco": "bc1qfs8967x9mzhwhcse4z7kjuuhsmx0kmz5v6j9w7",
+    "fontes_falhadas": [],
+    "nao_afirma": [
+      "receita externa (so Unum classifica)",
+      "titularidade legal",
+      "valor em moeda corrente",
+      "procura ou adopcao"
+    ],
+    "estado": "concordam",
+    "verificado": true,
+    "fontes": [
+      "https://blockstream.info/api",
+      "https://mempool.space/api"
+    ],
+    "saldo_confirmado": 10072,
+    "saldo_mempool": 0,
+    "txs": [
+      {
+        "txid": "004d02e5b7a2efa6b21e52acd8ee97ae5d5b0c33bb2a798074ca4e7848c81aa6",
+        "bloco": 974382,
+        "confirmada": true,
+        "sentido": "entrada",
+        "recebido_sats": 10402,
+        "gasto_sats": 0,
+        "origens": [
+          "bc1q6mc95wqpp05drvndewvy6z2ht3mrezvfkkvpl7"
+        ],
+        "classe": "interna",
+        "classificada_por": "Unum"
+      },
+      {
+        "txid": "b8a2bd6e3f0d36d110cf7b7399161ceed2d978fee26895a1eb1e6439f5ce2065",
+        "bloco": 974393,
+        "confirmada": true,
+        "sentido": "saida",
+        "recebido_sats": 10072,
+        "gasto_sats": 10402,
+        "origens": [
+          "bc1qfs8967x9mzhwhcse4z7kjuuhsmx0kmz5v6j9w7"
+        ],
+        "classe": "saida",
+        "classificada_por": null
+      }
+    ]
+  },
+  "nao_afirma": [
+    "receita",
+    "procura",
+    "adopcao",
+    "preco do VALIUM",
+    "que alguem de fora pagou",
+    "titularidade legal",
+    "que o agente tenha enviado ou possa enviar fundos"
+  ]
+}

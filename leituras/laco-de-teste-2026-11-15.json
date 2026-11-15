@@ -1,0 +1,40 @@
+{
+  "formato": "orai-laco-de-teste/v1",
+  "feito_em": "2026-11-15T11:23:22Z",
+  "valor_eth": "0.000001",
+  "chave": "nenhuma",
+  "web3": "simulado (nenhuma transaccao real)",
+  "passos": [
+    {
+      "passo": "propor",
+      "resultado": "aa17de63a9f1745e",
+      "nota": "proposto"
+    },
+    {
+      "passo": "enviar antes da decisao",
+      "resultado": null,
+      "nota": "recusado"
+    },
+    {
+      "passo": "decidir",
+      "resultado": "verificado",
+      "nota": "ok"
+    },
+    {
+      "passo": "enviar com pedido verificado",
+      "resultado": "0xsimulado",
+      "nota": "web3 simulado, nada foi enviado"
+    },
+    {
+      "passo": "enviar o mesmo pedido outra vez",
+      "resultado": null,
+      "nota": "recusado"
+    }
+  ],
+  "estado_final": [
+    "usado"
+  ],
+  "registos_na_cadeia": 4,
+  "cadeia_inteira": true,
+  "nota": "feito numa pasta temporaria: a pasta pedidos/ do repositorio continua vazia. A guarda recusa valor zero por desenho, por isso o teste usa 0.000001 ETH."
+}
