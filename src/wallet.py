@@ -83,7 +83,8 @@ class WalletManager:
     async def send_transaction(self, to_address: str, amount_eth: float, limite_eth: Optional[float] = None) -> Optional[str]:
         """Envia transação firmada, só se a guarda a permitir (src/guarda_envio.py).
 
-        Recusa por omissão: sem `limite_eth`, destino fora da lista ou valor acima do limite.
+        Sem tecto por decisão de Unum (15/11/2026): `limite_eth` é opcional. Recusa sempre
+        destino fora da lista (carteiras do criador) e valor inválido.
         """
         ok, motivo = verificar_envio(to_address, amount_eth, limite_eth)
         if not ok:
