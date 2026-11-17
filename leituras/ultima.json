@@ -1,10 +1,10 @@
 {
   "formato": "orai-leituras/v1",
-  "lido_em": "2026-11-15T11:22:54Z",
+  "lido_em": "2026-11-17T07:42:53Z",
   "testemunha": {
     "estado": "concordam",
     "verificado": true,
-    "bloco": 57756986,
+    "bloco": 58554967,
     "valor_wei": "2976352211822864886784",
     "valium": 2976.352211822865,
     "fontes_ok": [
@@ -18,7 +18,7 @@
   },
   "vigia": {
     "formato": "orai-vigia-fundacao/v1",
-    "lido_em": "2026-11-15T11:22:54.021425+00:00",
+    "lido_em": "2026-11-17T07:42:52.957251+00:00",
     "endereco": "bc1qfs8967x9mzhwhcse4z7kjuuhsmx0kmz5v6j9w7",
     "fontes_falhadas": [],
     "nao_afirma": [
