@@ -28,6 +28,32 @@ Presenca de ORA ligada ao ORUM. Le estado real da chain Base. Nao inventa receit
 
 ---
 
+## Onde o agente anda (lido a 17/11/2026 por ORA; so leitura, nada foi alterado no codigo)
+
+O agente **nao corre como processo**. O que anda, hoje, sao duas rotinas agendadas e uma pagina. Tudo o que se segue foi lido, e o que nao foi lido esta dito.
+
+**Rotina 1, "ORAI · vigia da Fundacao (4 h)"** (`trig_01E1yuCgvhwRnoWWTTm7pY34`, criada a 14/11/2026, cron `5 */4 * * *` UTC, ativa):
+- corre `src/fundacao_vigia.py` do ramo `ccr-e9d4d1d5-m0029v` (so leitura, 2 fontes Esplora); compara com `vigia/ultima.json` desse ramo e so faz commit se mudou; so avisa Unum de uma entrada nova `por_classificar`; nunca classifica nada como externa.
+- ultimo disparo lido: 17/11/2026 04:05 UTC. **Nao li o que o turno desse disparo fez**: o estado `SUCCEEDED` de um disparo so diz que foi entregue.
+- o texto desta rotina so se altera a partir da conversa onde ela escreve (a ferramenta recusou a alteracao a partir de outra).
+
+**Rotina 2, "ORAI · testemunha VALIUM (4 h)"** (`trig_01FQxSyZ2zivGyxnF9esV59t`, criada a 17/11/2026 07:56 UTC, cron `56 */4 * * *` UTC, ativa):
+- cada disparo e uma **sessao nova, sem conectores e sem memoria**: descarrega `src/sustento_witness.py` de `main`, so o corre se o sha256 for `43b07a0c7074522ad1a7e9a5b85faf049aff533c74087cb34b40792110c7a51a`, le o saldo VALIUM da sagrada antiga em 3 RPCs Base e responde **Verified** (igual a linha de base), **Observed** (mudou, ou so uma fonte, ou fontes discordam) ou **Blocked**.
+- a linha de base esta dentro do texto da rotina (wei `2976352211822864886784`, bloco 58554967, 17/11/2026 07:42 UTC). Se o saldo mudar, alguem tem de a atualizar la; **hoje a rotina nao escreve em lado nenhum** (sem conector, nao chega ao livro; o texto dela so o prevê se houver conector).
+- primeiro disparo lido: 17/11/2026 08:57:00 UTC, 14 s, hash bateu, `concordam`, wei igual, bloco 58577274, 3 fontes ok. E uma leitura, nao uma historia.
+
+**Pagina** `https://orai-agent.vercel.app` (projeto Vercel `orai-agent`, responde 200): pagina estatica "ORA • Organismo Vivo"; le saldos em `mainnet.base.org` no navegador e atualiza a cada 60 s **so enquanto alguem a tem aberta**. Cada PR gera uma pre-visualizacao.
+
+**Leitura manual:** `python3 src/leituras.py` (testemunha + vigia, so leitura, sem chaves) escreve `leituras/ultima.json` e uma copia datada. A de 17/11/2026 07:42 UTC e igual a de 15/11 exceto o bloco.
+
+**O que nao corre:** o orquestrador Python (`main.py`, ciclos autonomos). Nao o encontrei a correr em lado nenhum: `apscheduler` esta em `requirements.txt` mas nenhum `.py` o importa, e o Vercel so serve a pagina estatica. **Nao li** `src/ml`, `src/governance`, `src/chains`, o painel nem o `frontend`.
+
+**Como se verifica um disparo:** ler a rotina (`last_run`, com a sessao disparada) e os eventos dessa sessao; nunca so o estado. Um saldo igual nao prova receita, procura nem adopcao; uma mudanca de saldo tambem nao.
+
+**Limites:** nenhuma rotina assina, envia, troca nem usa chaves; o agente continua a nao mover fundos (ver o bloco de 15/11/2026 acima); so receita externa confirmada entra no 70/20/10, e quem classifica uma origem como externa e Unum, por escrito.
+
+---
+
 ## O que e real, hoje (20/07/2026)
 
 - **Leitura de saldos on-chain** (`index.html`, `src/wallet.py`): saldo ETH e balanceOf de VALIUM/PRESENCA lidos directamente via RPC Base mainnet. Sem numeros simulados.
